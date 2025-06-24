@@ -21,9 +21,10 @@ public class LoginController {
     }
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         if (loginRequest == null || loginRequest.getLogin() == null || loginRequest.getPassword() == null) {
-            throw new IllegalArgumentException("Invalid request payload");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid request payload"));
         }
 
         final Optional<UsersEntity> user = loginService.findByUsername(loginRequest.getLogin());

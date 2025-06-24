@@ -18,6 +18,8 @@ public class UsersEntity {
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "roles")
     private Set<String> roles;
 
     public UsersEntity(final Long id, final String username, final String password, final Set<String> roles) {
