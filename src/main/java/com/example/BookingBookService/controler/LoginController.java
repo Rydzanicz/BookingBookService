@@ -1,78 +1,101 @@
 package com.example.BookingBookService.controler;
 
-import com.example.BookingBookService.entity.UsersEntity;
+import com.example.BookingBookService.dto.JwtResponse;
+import com.example.BookingBookService.dto.LoginRequest;
+import com.example.BookingBookService.dto.MessageResponse;
+import com.example.BookingBookService.dto.SignupRequest;
+import com.example.BookingBookService.model.RefreshToken;
+import com.example.BookingBookService.model.User;
+import com.example.BookingBookService.repository.UserRepository;
+import com.example.BookingBookService.security.UserPrincipal;
+import com.example.BookingBookService.security.jwt.JwtUtils;
 import com.example.BookingBookService.service.LoginService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import com.example.BookingBookService.service.RefreshTokenService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@RequestMapping("/api/login")
 public class LoginController {
 
-    private final LoginService loginService;
+    @Autowired
+    private LoginService loginService;
 
-    public LoginController(final LoginService loginService) {
-        this.loginService = loginService;
-    }
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        final Optional<User> user = loginService.findByUsername(loginRequest.getUsername());
+
+        if (user.isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Invalid request payload"));
+                    .body(new MessageResponse("Error: User not found!"));
         }
 
-        final Optional<UsersEntity> user = loginService.findByUsername(loginRequest.getUsername());
-        if (user.isPresent() && user.get()
-                .getPassword()
-                .equals(loginRequest.getPassword())) {
-
-            return ResponseEntity.ok("Logging successfully");
+        if (!loginService.validatePassword(user.get(), loginRequest.getPassword())) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error: Invalid credentials!"));
         }
 
-        return ResponseEntity.status(401)
-                .body(Map.of("error", "Invalid credentials")
-                        .toString());
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userPrincipal.getId());
+
+        return ResponseEntity.ok(new JwtResponse(jwt, refreshToken.getToken(), userPrincipal.getId(),
+                userPrincipal.getUsername(), userPrincipal.getEmail(), userPrincipal.getAuthorities()));
     }
 
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        if (registerRequest == null ||
-                registerRequest.getUsername() == null ||
-                registerRequest.getPassword() == null) {
+    @PostMapping("/register")
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Invalid request payload"));
+                    .body(new MessageResponse("Error: Username is already taken!"));
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
         }
 
         try {
-            final Set<String> roles = registerRequest.getRoles() != null ?
-                    registerRequest.getRoles() :
-                    Set.of("ROLE_USER");
-
-            final UsersEntity newUser = loginService.registerUser(
-                    registerRequest.getUsername(),
-                    registerRequest.getPassword(),
-                    roles
+            final User newUser = loginService.registerUser(
+                    signUpRequest.getUsername(),
+                    signUpRequest.getEmail(),
+                    signUpRequest.getPassword(),
+                    signUpRequest.getRole()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of(
-                            "message", "User has been registered",
-                            "username", newUser.getUsername()
-                    ));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An error occurred during registration"));
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error: Registration failed - " + e.getMessage()));
         }
     }
 }

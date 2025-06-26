@@ -1,64 +1,65 @@
 package com.example.BookingBookService.controler;
 
-import com.example.BookingBookService.entity.ReadBookEntity;
-import com.example.BookingBookService.entity.UsersEntity;
+import com.example.BookingBookService.model.User;
+import com.example.BookingBookService.model.UserBook;
 import com.example.BookingBookService.repository.UserRepository;
-import com.example.BookingBookService.service.BookService;
-import com.example.BookingBookService.service.GoogleBooksService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import com.example.BookingBookService.security.UserPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
-    private final BookService bookService;
-    private final UserRepository userRepository;
-    private final GoogleBooksService googleBooksService;
 
-    public BookController(final BookService bookService, final UserRepository userRepository, final GoogleBooksService googleBooksService) {
-        this.bookService = bookService;
-        this.userRepository = userRepository;
-        this.googleBooksService = googleBooksService;
-    }
+    @Autowired
+    private UserRepository userRepository;
 
-    @GetMapping(value = "/read", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getReadBooks(@RequestParam String username) {
+    @GetMapping("/collection")
+    public ResponseEntity<?> getUserCollection(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         try {
-            final UsersEntity user = userRepository.findByUsername(username)
+            User user = userRepository.findById(userPrincipal.getId())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-            List<ReadBookEntity> readBooks = bookService.getUserReadBooks(user);
-            return ResponseEntity.ok(readBooks);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            Set<UserBook> userBooks = user.getUserBooks();
+            return ResponseEntity.ok(userBooks);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Could not get read books: " + e.getMessage()));
+            return ResponseEntity.badRequest().body("Error retrieving collection: " + e.getMessage());
         }
     }
 
-    @DeleteMapping(value = "/read/{readBookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> removeFromReadList(@PathVariable Long readBookId,
-                                                @RequestParam String username) {
+    @PostMapping("/collection")
+    public ResponseEntity<?> addToCollection(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                             @RequestBody String bookData) {
         try {
-            final UsersEntity user = userRepository.findByUsername(username)
+            User user = userRepository.findById(userPrincipal.getId())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-            bookService.removeFromReadList(user, readBookId);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", e.getMessage()));
+            // Logika dodawania książki do kolekcji - do rozszerzenia
+            return ResponseEntity.ok("Book added to collection");
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Could not remove book: " + e.getMessage()));
+            return ResponseEntity.badRequest().body("Error adding book: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/collection/{bookId}")
+    public ResponseEntity<?> removeFromCollection(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                                  @PathVariable String bookId) {
+        try {
+            User user = userRepository.findById(userPrincipal.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+            // Logika usuwania książki z kolekcji - do rozszerzenia
+            return ResponseEntity.ok("Book removed from collection");
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error removing book: " + e.getMessage());
         }
     }
 }
