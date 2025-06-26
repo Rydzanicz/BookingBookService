@@ -4,7 +4,7 @@ The backend provides a secure REST API for user authentication, book search, and
 integrates with external book data sources and stores user information in a database. The system is designed for
 scalability, security, and easy future expansion.
 
-1. Baza danych
+I. Baza danych
 
    psql -U postgres
 
@@ -44,3 +44,30 @@ VALUES
 SELECT u.id, u.username, u.password, ur.roles
 FROM users u
 LEFT JOIN users_roles ur ON u.id = ur.user_id;
+
+II.Google Books API
+
+1. Wejdź na Google Cloud Console
+   Otwórz stronę: https://console.cloud.google.com/
+
+2. Zaloguj się na swoje konto Google
+3. Utwórz nowy projekt (lub wybierz istniejący)
+   Kliknij nazwę projektu w górnej belce i wybierz „Nowy projekt”.
+
+Nadaj nazwę i kliknij „Utwórz”.
+
+4. Włącz Google Books API
+   W menu po lewej wybierz API i usługi → Biblioteka.
+
+Wyszukaj Books API lub Google Books API.
+
+Kliknij na wynik i wybierz Włącz.
+
+5. Przejdź do zakładki „Dane logowania” (Credentials)
+   W menu po lewej kliknij API i usługi → Dane logowania.
+
+6. Utwórz nowy klucz API
+   Kliknij + Utwórz dane logowania (Create credentials) → Klucz API (API key).
+
+Klucz zostanie wygenerowany i wyświetlony na ekranie.
+
