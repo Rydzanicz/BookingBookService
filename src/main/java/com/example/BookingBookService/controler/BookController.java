@@ -1,15 +1,14 @@
 package com.example.BookingBookService.controler;
 
-import com.example.BookingBookService.model.User;
-import com.example.BookingBookService.model.UserBook;
-import com.example.BookingBookService.repository.UserRepository;
-import com.example.BookingBookService.security.UserPrincipal;
+import com.example.BookingBookService.entity.ReadBookEntity;
+import com.example.BookingBookService.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -17,49 +16,121 @@ import java.util.Set;
 public class BookController {
 
     @Autowired
-    private UserRepository userRepository;
+    private BookService bookService;
 
-    @GetMapping("/collection")
-    public ResponseEntity<?> getUserCollection(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    // Sprawdź czy książka jest w kolekcji użytkownika
+    @GetMapping("/collection/exists")
+    public ResponseEntity<Map<String, Boolean>> checkBookExists(
+            @RequestParam String username,
+            @RequestParam String googleBookId) {
         try {
-            User user = userRepository.findById(userPrincipal.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-            Set<UserBook> userBooks = user.getUserBooks();
-            return ResponseEntity.ok(userBooks);
-
+            boolean exists = bookService.isBookInUserCollection(username, googleBookId);
+            return ResponseEntity.ok(Map.of("exists", exists));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error retrieving collection: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("exists", false));
         }
     }
 
+    // Dodaj książkę do kolekcji
     @PostMapping("/collection")
-    public ResponseEntity<?> addToCollection(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                                             @RequestBody String bookData) {
+    public ResponseEntity<?> addBookToCollection(@RequestBody Map<String, Object> bookData) {
         try {
-            User user = userRepository.findById(userPrincipal.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            String username = (String) bookData.get("username");
+            String googleBookId = (String) bookData.get("googleBookId");
+            String title = (String) bookData.get("title");
+            String authors = (String) bookData.get("authors");
+            String description = (String) bookData.get("description");
+            String publishedDate = (String) bookData.get("publishedDate");
+            Integer pageCount = (Integer) bookData.get("pageCount");
+            String categories = (String) bookData.get("categories");
+            String thumbnailUrl = (String) bookData.get("thumbnailUrl");
 
-            // Logika dodawania książki do kolekcji - do rozszerzenia
-            return ResponseEntity.ok("Book added to collection");
+            ReadBookEntity savedBook = bookService.addBookToCollection(
+                    username, googleBookId, title, authors, description,
+                    publishedDate, pageCount, categories, thumbnailUrl
+            );
 
+            return ResponseEntity.ok(savedBook);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error adding book: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @DeleteMapping("/collection/{bookId}")
-    public ResponseEntity<?> removeFromCollection(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                                                  @PathVariable String bookId) {
+    // Pobierz wszystkie książki użytkownika
+    @GetMapping("/collection")
+    public ResponseEntity<?> getUserCollection(@RequestParam String username) {
         try {
-            User user = userRepository.findById(userPrincipal.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-            // Logika usuwania książki z kolekcji - do rozszerzenia
-            return ResponseEntity.ok("Book removed from collection");
-
+            List<ReadBookEntity> books = bookService.getUserBooks(username);
+            return ResponseEntity.ok(books);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error removing book: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Usuń książkę z kolekcji
+    @DeleteMapping("/collection")
+    public ResponseEntity<?> removeBookFromCollection(
+            @RequestParam String username,
+            @RequestParam String googleBookId) {
+        try {
+            bookService.removeBookFromCollection(username, googleBookId);
+            return ResponseEntity.ok(Map.of("message", "Book removed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Pobierz konkretną książkę
+    @GetMapping("/collection/book")
+    public ResponseEntity<?> getUserBook(
+            @RequestParam String username,
+            @RequestParam String googleBookId) {
+        try {
+            Optional<ReadBookEntity> book = bookService.getUserBook(username, googleBookId);
+            if (book.isPresent()) {
+                return ResponseEntity.ok(book.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Policz książki użytkownika
+    @GetMapping("/collection/count")
+    public ResponseEntity<?> countUserBooks(@RequestParam String username) {
+        try {
+            long count = bookService.countUserBooks(username);
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Wyszukaj książki po tytule
+    @GetMapping("/collection/search/title")
+    public ResponseEntity<?> searchBooksByTitle(
+            @RequestParam String username,
+            @RequestParam String title) {
+        try {
+            List<ReadBookEntity> books = bookService.searchBooksByTitle(username, title);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Wyszukaj książki po autorze
+    @GetMapping("/collection/search/author")
+    public ResponseEntity<?> searchBooksByAuthor(
+            @RequestParam String username,
+            @RequestParam String author) {
+        try {
+            List<ReadBookEntity> books = bookService.searchBooksByAuthor(username, author);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }

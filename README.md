@@ -4,6 +4,10 @@ The backend provides a secure REST API for user authentication, book search, and
 integrates with external book data sources and stores user information in a database. The system is designed for
 scalability, security, and easy future expansion.
 
+
+
+Rekomendowane JDK Oracle JDK 24  oracle.com/java/technologies/downloads
+
 I. Baza danych
 
    psql -U postgres
@@ -13,10 +17,12 @@ CREATE DATABASE bookingbook;
 \c bookingbook
 
 CREATE TABLE users (
-id SERIAL PRIMARY KEY,        
+id SERIAL PRIMARY KEY,
 username VARCHAR(255) NOT NULL UNIQUE,
-password VARCHAR(255) NOT NULL         
+email VARCHAR(255) NOT NULL UNIQUE,
+password VARCHAR(255) NOT NULL
 );
+
 
 CREATE TABLE users_roles (
 user_id BIGINT NOT NULL,      
@@ -31,10 +37,11 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 ALTER TABLE users OWNER TO postgres;
 ALTER TABLE users_roles OWNER TO postgres;
 
-INSERT INTO users (username, password)
+INSERT INTO users (username, email, password)
 VALUES
-('ewa', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO'),
-('adam', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO');
+('ewa', 'ewa@example.com', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO'),
+('adam', 'adam@example.com', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO');
+
 
 INSERT INTO users_roles (user_id, roles)
 VALUES
