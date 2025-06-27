@@ -24,11 +24,12 @@ password VARCHAR(255) NOT NULL
 );
 
 
+DROP TABLE IF EXISTS users_roles CASCADE;
+
 CREATE TABLE users_roles (
-user_id BIGINT NOT NULL,      
-roles VARCHAR(100) NOT NULL,  
-PRIMARY KEY (user_id, roles),
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+user_id bigint NOT NULL
+REFERENCES users(id) ON DELETE CASCADE,
+role    varchar(50) NOT NULL
 );
 
 GRANT ALL PRIVILEGES ON DATABASE bookingbook TO postgres;
@@ -39,8 +40,8 @@ ALTER TABLE users_roles OWNER TO postgres;
 
 INSERT INTO users (username, email, password)
 VALUES
-('ewa', 'ewa@example.com', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO'),
-('adam', 'adam@example.com', '$2a$10$XMcRhkMPWboQvXAlJKyCa.RLVY0kzKfIUNJDcjFgTnz5EHzDY6YmO');
+('ewa', 'ewa@example.com', 'mojeHaslo123'),
+('adam', 'adam@example.com', 'mojeHaslo123');
 
 
 INSERT INTO users_roles (user_id, roles)
