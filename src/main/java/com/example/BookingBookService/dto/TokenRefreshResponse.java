@@ -10,7 +10,6 @@ public class TokenRefreshResponse {
         this.refreshToken = refreshToken;
     }
 
-    // Getters and setters
     public String getAccessToken() {
         return accessToken;
     }

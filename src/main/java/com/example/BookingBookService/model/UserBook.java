@@ -5,10 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_books",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "google_book_id"})
-        })
+@Table(name = "user_books", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "google_book_id"})})
 public class UserBook {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,7 +46,6 @@ public class UserBook {
         this.addedAt = LocalDateTime.now();
     }
 
-    // Wszystkie gettery i settery
     public Long getId() {
         return id;
     }

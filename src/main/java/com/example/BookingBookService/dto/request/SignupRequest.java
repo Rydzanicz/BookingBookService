@@ -1,48 +1,30 @@
-package com.example.BookingBookService.model;
+package com.example.BookingBookService.dto.request;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class SignupRequest {
     @NotBlank
     @Size(min = 3, max = 20)
-    @Column(unique = true, nullable = false)
     private String username;
 
     @NotBlank
     @Size(max = 50)
     @Email
-    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 120)
-    @Column(nullable = false)
+    @Size(min = 6, max = 40)
     private String password;
 
-    public User() {}
+    public SignupRequest() {}
 
-    public User(String username, String email, String password) {
+    public SignupRequest(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
     }
-
-    // getters i setters
-    public Long getId() {return id;}
 
     public String getUsername() {return username;}
 

@@ -24,34 +24,14 @@ password VARCHAR(255) NOT NULL
 );
 
 
-DROP TABLE IF EXISTS users_roles CASCADE;
-
-CREATE TABLE users_roles (
-user_id bigint NOT NULL
-REFERENCES users(id) ON DELETE CASCADE,
-role    varchar(50) NOT NULL
-);
+DROP TABLE IF EXISTS users CASCADE;
 
 GRANT ALL PRIVILEGES ON DATABASE bookingbook TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 ALTER TABLE users OWNER TO postgres;
-ALTER TABLE users_roles OWNER TO postgres;
-
-INSERT INTO users (username, email, password)
-VALUES
-('ewa', 'ewa@example.com', 'mojeHaslo123'),
-('adam', 'adam@example.com', 'mojeHaslo123');
 
 
-INSERT INTO users_roles (user_id, roles)
-VALUES
-(1, 'ROLE_USER'),
-(2, 'ROLE_ADMIN');
-
-SELECT u.id, u.username, u.password, ur.roles
-FROM users u
-LEFT JOIN users_roles ur ON u.id = ur.user_id;
 
 II.Google Books API
 

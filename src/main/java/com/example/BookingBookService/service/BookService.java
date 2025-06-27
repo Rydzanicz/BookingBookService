@@ -21,7 +21,6 @@ public class BookService {
     @Autowired
     private UsersRepository usersRepository;
 
-    // Sprawdź czy książka jest już w kolekcji użytkownika
     public boolean isBookInUserCollection(String username, String googleBookId) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -30,10 +29,15 @@ public class BookService {
         return false;
     }
 
-    // Dodaj książkę do kolekcji użytkownika
-    public ReadBookEntity addBookToCollection(String username, String googleBookId, String title,
-                                              String authors, String description, String publishedDate,
-                                              Integer pageCount, String categories, String thumbnailUrl) {
+    public ReadBookEntity addBookToCollection(String username,
+                                              String googleBookId,
+                                              String title,
+                                              String authors,
+                                              String description,
+                                              String publishedDate,
+                                              Integer pageCount,
+                                              String categories,
+                                              String thumbnailUrl) {
         Optional<UsersEntity> userOpt = usersRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found: " + username);
@@ -41,7 +45,6 @@ public class BookService {
 
         UsersEntity user = userOpt.get();
 
-        // Sprawdź czy książka już nie istnieje w kolekcji
         if (readBookRepository.existsByUserAndGoogleBookId(user, googleBookId)) {
             throw new RuntimeException("Book already exists in user collection");
         }
@@ -57,7 +60,6 @@ public class BookService {
         return readBookRepository.save(readBook);
     }
 
-    // Pobierz wszystkie książki użytkownika
     public List<ReadBookEntity> getUserBooks(String username) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -66,7 +68,6 @@ public class BookService {
         throw new RuntimeException("User not found: " + username);
     }
 
-    // Usuń książkę z kolekcji użytkownika
     public void removeBookFromCollection(String username, String googleBookId) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -76,7 +77,6 @@ public class BookService {
         }
     }
 
-    // Pobierz konkretną książkę użytkownika
     public Optional<ReadBookEntity> getUserBook(String username, String googleBookId) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -85,7 +85,6 @@ public class BookService {
         return Optional.empty();
     }
 
-    // Policz książki użytkownika
     public long countUserBooks(String username) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -94,7 +93,6 @@ public class BookService {
         return 0;
     }
 
-    // Wyszukaj książki po tytule
     public List<ReadBookEntity> searchBooksByTitle(String username, String title) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {
@@ -103,7 +101,6 @@ public class BookService {
         throw new RuntimeException("User not found: " + username);
     }
 
-    // Wyszukaj książki po autorze
     public List<ReadBookEntity> searchBooksByAuthor(String username, String author) {
         Optional<UsersEntity> user = usersRepository.findByUsername(username);
         if (user.isPresent()) {

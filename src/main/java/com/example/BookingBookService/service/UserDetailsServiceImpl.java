@@ -1,4 +1,5 @@
 package com.example.BookingBookService.service;
+
 import com.example.BookingBookService.model.User;
 import com.example.BookingBookService.repository.UserRepository;
 import com.example.BookingBookService.security.UserPrincipal;
@@ -17,8 +18,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                                  .orElseThrow(() -> new UsernameNotFoundException("User Not Found: " + username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found: " + username));
 
         return UserPrincipal.build(user);
     }
