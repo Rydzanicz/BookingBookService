@@ -4,58 +4,50 @@ The backend provides a secure REST API for user authentication, book search, and
 integrates with external book data sources and stores user information in a database. The system is designed for
 scalability, security, and easy future expansion.
 
+Recommended JDK Oracle JDK 24 oracle.com/java/technologies/downloads
 
+I. Database
 
-Rekomendowane JDK Oracle JDK 24  oracle.com/java/technologies/downloads
-
-I. Baza danych
-
-   psql -U postgres
+psql -U postgres
 
 CREATE DATABASE bookingbook;
 
-\c bookingbook
-
-CREATE TABLE users (
-id SERIAL PRIMARY KEY,
-username VARCHAR(255) NOT NULL UNIQUE,
-email VARCHAR(255) NOT NULL UNIQUE,
-password VARCHAR(255) NOT NULL
-);
-
-
-DROP TABLE IF EXISTS users CASCADE;
-
-GRANT ALL PRIVILEGES ON DATABASE bookingbook TO postgres;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
-ALTER TABLE users OWNER TO postgres;
-
-
-
 II.Google Books API
 
-1. Wejdź na Google Cloud Console
-   Otwórz stronę: https://console.cloud.google.com/
+1. Go to Google Cloud Console
+   Open the page: https://console.cloud.google.com/
 
-2. Zaloguj się na swoje konto Google
-3. Utwórz nowy projekt (lub wybierz istniejący)
-   Kliknij nazwę projektu w górnej belce i wybierz „Nowy projekt”.
+2. Log in to your Google account
+3. Create a new project (or select an existing one)
+   Click the project name on the top bar and select “New Project”.
 
-Nadaj nazwę i kliknij „Utwórz”.
+Give it a name and click “Create”.
 
-4. Włącz Google Books API
-   W menu po lewej wybierz API i usługi → Biblioteka.
+4. Enable Google Books API
+   In the left menu, select APIs & Services → Library.
 
-Wyszukaj Books API lub Google Books API.
+Search for Books API or Google Books API.
 
-Kliknij na wynik i wybierz Włącz.
+Click on the result and select Enable.
 
-5. Przejdź do zakładki „Dane logowania” (Credentials)
-   W menu po lewej kliknij API i usługi → Dane logowania.
+5. Go to the “Credentials” tab
+   In the left menu, click APIs & Services → Credentials.
 
-6. Utwórz nowy klucz API
-   Kliknij + Utwórz dane logowania (Create credentials) → Klucz API (API key).
+6. Create a new API key
+   Click + Create Credentials → API Key.
 
-Klucz zostanie wygenerowany i wyświetlony na ekranie.
+The key will be generated and displayed on the screen.
 
+III. Security
+
+The application is secured with JWT + apiKey. You need to set your own private applications in the
+application.properties file.
+
+#Security
+security.api.key=
+
+#JWT Configuration
+bookingbook.app.jwtSecret=
+
+#Google
+google.books.api.key=
