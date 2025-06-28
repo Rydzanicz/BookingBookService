@@ -2,6 +2,7 @@ package com.example.BookingBookService.service;
 
 import com.example.BookingBookService.controler.BookController;
 import com.example.BookingBookService.controler.request.AddBookRequest;
+import com.example.BookingBookService.controler.request.RemoveBookRequest;
 import com.example.BookingBookService.entity.UserBookEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BookControllerTest {
 
@@ -55,10 +52,10 @@ class BookControllerTest {
     void ShouldAddBookToCollectionSuccessfully() {
         // Given
         final AddBookRequest request = new AddBookRequest("adam",
-                                                          "123",
-                                                          "Effective Java",
-                                                          "Joshua Bloch",
-                                                          "A must-read book for Java developers");
+                "123",
+                "Effective Java",
+                "Joshua Bloch",
+                "A must-read book for Java developers");
 
         // When
         final ResponseEntity<?> response = bookController.addBookToCollection(request);
@@ -74,7 +71,7 @@ class BookControllerTest {
         // Given
         final String username = "adam";
         final List<UserBookEntity> books = List.of(new UserBookEntity(null, "123", "Test Book 1", "Author", "Description 1"),
-                                                   new UserBookEntity(null, "456", "Test Book 2", "Author", "Description 2"));
+                new UserBookEntity(null, "456", "Test Book 2", "Author", "Description 2"));
 
         when(bookService.getUserBooks(username)).thenReturn(books);
 
@@ -107,34 +104,32 @@ class BookControllerTest {
     @Test
     void ShouldRemoveBookFromCollectionSuccessfully() {
         // Given
-        final String username = "adam";
-        final String googleBookId = "123";
+        final RemoveBookRequest request = new RemoveBookRequest("adam", "123");
 
         // When
-        final ResponseEntity<?> response = bookController.removeBookFromCollection(username, googleBookId);
+        final ResponseEntity<?> response = bookController.removeBookFromCollection(request);
 
         // Then
         assertEquals(200, response.getStatusCodeValue());
         assertInstanceOf(Map.class, response.getBody());
         assertEquals("Book removed successfully", ((Map<?, ?>) response.getBody()).get("message"));
-        verify(bookService, times(1)).removeBookFromCollection(username, googleBookId);
+        verify(bookService, times(1)).removeBookFromCollection(request.getUsername(), request.getGoogleBookId());
     }
 
     @Test
     void ShouldReturnBadRequestWhenRemoveBookFromCollectionFails() {
         // Given
-        final String username = "nonExistentUser";
-        final String googleBookId = "456";
+        final RemoveBookRequest request = new RemoveBookRequest("nonExistentUser", "123");
 
-        doThrow(new RuntimeException("User not found")).when(bookService).removeBookFromCollection(username, googleBookId);
+        doThrow(new RuntimeException("User not found")).when(bookService).removeBookFromCollection(request.getUsername(), request.getGoogleBookId());
 
         // When
-        final ResponseEntity<?> response = bookController.removeBookFromCollection(username, googleBookId);
+        final ResponseEntity<?> response = bookController.removeBookFromCollection(request);
 
         // Then
         assertEquals(400, response.getStatusCodeValue());
         assertInstanceOf(Map.class, response.getBody());
         assertEquals("User not found", ((Map<?, ?>) response.getBody()).get("error"));
-        verify(bookService, times(1)).removeBookFromCollection(username, googleBookId);
+        verify(bookService, times(1)).removeBookFromCollection(request.getUsername(), request.getGoogleBookId());
     }
 }

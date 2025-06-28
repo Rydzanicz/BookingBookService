@@ -1,18 +1,12 @@
 package com.example.BookingBookService.controler;
 
 import com.example.BookingBookService.controler.request.AddBookRequest;
+import com.example.BookingBookService.controler.request.RemoveBookRequest;
 import com.example.BookingBookService.entity.UserBookEntity;
 import com.example.BookingBookService.service.BookService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +34,7 @@ public class BookController {
         }
     }
 
-    @GetMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/collection")
     public ResponseEntity<?> getUserCollection(@RequestParam(defaultValue = "adam") String username) {
         try {
             final List<UserBookEntity> books = bookService.getUserBooks(username);
@@ -50,11 +44,10 @@ public class BookController {
         }
     }
 
-    @DeleteMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> removeBookFromCollection(@RequestParam(defaultValue = "adam") String username,
-                                                      @RequestParam(defaultValue = "n3vng7gyGCYC") String googleBookId) {
+    @DeleteMapping(value = "/collection", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> removeBookFromCollection(@RequestBody RemoveBookRequest removeBookRequest) {
         try {
-            bookService.removeBookFromCollection(username, googleBookId);
+            bookService.removeBookFromCollection(removeBookRequest.getUsername(), removeBookRequest.getGoogleBookId());
             return ResponseEntity.ok(Map.of("message", "Book removed successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
