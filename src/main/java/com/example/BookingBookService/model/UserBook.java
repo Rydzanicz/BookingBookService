@@ -30,15 +30,6 @@ public class UserBook {
     @Column(name = "published_date")
     private String publishedDate;
 
-    @Column(name = "page_count")
-    private Integer pageCount;
-
-    @Column(name = "categories", length = 500)
-    private String categories;
-
-    @Column(name = "thumbnail_url", length = 500)
-    private String thumbnailUrl;
-
     @Column(name = "added_at")
     private LocalDateTime addedAt;
 
@@ -102,29 +93,6 @@ public class UserBook {
         this.publishedDate = publishedDate;
     }
 
-    public Integer getPageCount() {
-        return pageCount;
-    }
-
-    public void setPageCount(Integer pageCount) {
-        this.pageCount = pageCount;
-    }
-
-    public String getCategories() {
-        return categories;
-    }
-
-    public void setCategories(String categories) {
-        this.categories = categories;
-    }
-
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
-    }
-
-    public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
-    }
 
     public LocalDateTime getAddedAt() {
         return addedAt;

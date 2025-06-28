@@ -16,11 +16,12 @@ public class ApiKeyFilter implements Filter {
 
     @Value("${security.api.key}")
     private String apiKey;
+
     @Value("${security.api.role}")
     private String role;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
+    public void doFilter(final ServletRequest request,final ServletResponse response,final FilterChain chain) throws IOException {
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
 

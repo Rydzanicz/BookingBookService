@@ -55,7 +55,6 @@ public class ReadBookEntity {
         this.addedAt = LocalDateTime.now();
     }
 
-    // Konstruktor z parametrami
     public ReadBookEntity(UsersEntity user, String googleBookId, String title) {
         this();
         this.user = user;
@@ -63,7 +62,6 @@ public class ReadBookEntity {
         this.title = title;
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

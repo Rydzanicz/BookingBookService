@@ -14,9 +14,9 @@ public class UserPrincipal implements UserDetails {
     private final String username;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
-    private String email;
+    private final String email;
 
-    public UserPrincipal(Long id, String username, String password) {
+    public UserPrincipal(final Long id, final String username, final String email, final String password) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -25,7 +25,7 @@ public class UserPrincipal implements UserDetails {
     }
 
     public static UserPrincipal build(User user) {
-        return new UserPrincipal(user.getId(), user.getUsername(), user.getPassword());
+        return new UserPrincipal(user.getId(), user.getUsername(), user.getEmail(), user.getPassword());
     }
 
     @Override

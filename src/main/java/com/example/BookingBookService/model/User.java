@@ -35,13 +35,12 @@ public class User {
 
     public User() {}
 
-    public User(String username, String email, String password) {
+    public User(final String username, final String email, final String password) {
         this.username = username;
         this.email = email;
         this.password = password;
     }
 
-    // getters i setters
     public Long getId() {return id;}
 
     public String getUsername() {return username;}

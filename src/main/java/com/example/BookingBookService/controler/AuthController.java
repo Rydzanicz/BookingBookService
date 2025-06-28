@@ -1,15 +1,15 @@
 package com.example.BookingBookService.controler;
 
 import com.example.BookingBookService.dto.JwtResponse;
-import com.example.BookingBookService.dto.request.LoginRequest;
 import com.example.BookingBookService.dto.MessageResponse;
+import com.example.BookingBookService.dto.request.LoginRequest;
 import com.example.BookingBookService.dto.request.SignupRequest;
 import com.example.BookingBookService.model.User;
 import com.example.BookingBookService.repository.UserRepository;
 import com.example.BookingBookService.security.UserPrincipal;
 import com.example.BookingBookService.security.jwt.JwtUtils;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,33 +26,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
     AuthenticationManager authenticationManager;
 
-    @Autowired
     UserRepository userRepository;
 
-    @Autowired
     PasswordEncoder encoder;
 
-    @Autowired
     JwtUtils jwtUtils;
 
-    @PostMapping("/signin")
+    public AuthController(final AuthenticationManager authenticationManager,
+                          final UserRepository userRepository,
+                          final PasswordEncoder encoder,
+                          final JwtUtils jwtUtils) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+    }
+
+    @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         final Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                                                                                                                          loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        final    String jwt = jwtUtils.generateJwtToken(authentication);
+        final String jwt = jwtUtils.generateJwtToken(authentication);
 
-        final     UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        final UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         return ResponseEntity.ok(new JwtResponse(jwt, userPrincipal.getId(), userPrincipal.getUsername(), userPrincipal.getEmail()));
     }
 
 
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
 
@@ -64,7 +70,7 @@ public class AuthController {
         }
 
 
-        final     User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
+        final User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));

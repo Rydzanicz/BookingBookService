@@ -2,8 +2,8 @@ package com.example.BookingBookService.controller;
 
 import com.example.BookingBookService.controler.AuthController;
 import com.example.BookingBookService.dto.JwtResponse;
-import com.example.BookingBookService.dto.request.LoginRequest;
 import com.example.BookingBookService.dto.MessageResponse;
+import com.example.BookingBookService.dto.request.LoginRequest;
 import com.example.BookingBookService.dto.request.SignupRequest;
 import com.example.BookingBookService.model.User;
 import com.example.BookingBookService.repository.UserRepository;
@@ -24,7 +24,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AuthControllerTest {
 
@@ -49,13 +53,13 @@ class AuthControllerTest {
     }
 
     @Test
-    void authenticateUser_ShouldReturnJwtResponse() {
-        // Arrange
-        LoginRequest loginRequest = new LoginRequest("testUser", "testPassword");
-        User user = new User("testUser", "testEmail@test.com", "encodedPassword");
+    void authenticateUserShouldReturnJwtResponse() {
+        // Given
+        final LoginRequest loginRequest = new LoginRequest("testUser", "testPassword");
+        final User user = new User("testUser", "testEmail@test.com", "encodedPassword");
 
-        Authentication authentication = mock(Authentication.class);
-        UserPrincipal userPrincipal = new UserPrincipal(1L, "testUser", "testPassword");
+        final Authentication authentication = mock(Authentication.class);
+        final UserPrincipal userPrincipal = new UserPrincipal(1L, "testUser", "testEmail@test.com", "testPassword");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(userPrincipal);
@@ -63,10 +67,10 @@ class AuthControllerTest {
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(encoder.matches("testPassword", "encodedPassword")).thenReturn(true);
 
-        // Act
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
+        // When
+        final ResponseEntity<?> response = authController.authenticateUser(loginRequest);
 
-        // Assert
+        // Then
         assertEquals(200, response.getStatusCodeValue());
         JwtResponse jwtResponse = (JwtResponse) response.getBody();
         assertEquals("testJwtToken", jwtResponse.getAccessToken());
@@ -75,18 +79,18 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerUser_ShouldReturnMessageResponse_WhenUserIsRegisteredSuccessfully() {
-        // Arrange
-        SignupRequest signupRequest = new SignupRequest("newUser", "newEmail@test.com", "newPassword");
+    void registerUserShouldReturnMessageResponseWhenUserIsRegisteredSuccessfully() {
+        // Given
+        final SignupRequest signupRequest = new SignupRequest("newUser", "newEmail@test.com", "newPassword");
 
         when(userRepository.existsByUsername("newUser")).thenReturn(false);
         when(userRepository.existsByEmail("newEmail@test.com")).thenReturn(false);
         when(encoder.encode("newPassword")).thenReturn("encodedPassword");
 
-        // Act
-        ResponseEntity<?> response = authController.registerUser(signupRequest);
+        // When
+        final ResponseEntity<?> response = authController.registerUser(signupRequest);
 
-        // Assert
+        // Then
         assertEquals(200, response.getStatusCodeValue());
         MessageResponse messageResponse = (MessageResponse) response.getBody();
         assertEquals("User registered successfully!", messageResponse.getMessage());
@@ -94,16 +98,16 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerUser_ShouldReturnError_WhenUsernameIsTaken() {
-        // Arrange
-        SignupRequest signupRequest = new SignupRequest("existingUser", "newEmail@test.com", "newPassword");
+    void registerUserShouldReturnErrorWhenUsernameIsTaken() {
+        // Given
+        final SignupRequest signupRequest = new SignupRequest("existingUser", "newEmail@test.com", "newPassword");
 
         when(userRepository.existsByUsername("existingUser")).thenReturn(true);
 
-        // Act
-        ResponseEntity<?> response = authController.registerUser(signupRequest);
+        // When
+        final ResponseEntity<?> response = authController.registerUser(signupRequest);
 
-        // Assert
+        // Then
         assertEquals(400, response.getStatusCodeValue());
         MessageResponse messageResponse = (MessageResponse) response.getBody();
         assertEquals("Error: Username already taken!", messageResponse.getMessage());
@@ -111,17 +115,17 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerUser_ShouldReturnError_WhenEmailIsInUse() {
-        // Arrange
-        SignupRequest signupRequest = new SignupRequest("newUser", "existingEmail@test.com", "newPassword");
+    void registerUserShouldReturnErrorWhenEmailIsInUse() {
+        // Given
+        final SignupRequest signupRequest = new SignupRequest("newUser", "existingEmail@test.com", "newPassword");
 
         when(userRepository.existsByUsername("newUser")).thenReturn(false);
         when(userRepository.existsByEmail("existingEmail@test.com")).thenReturn(true);
 
-        // Act
-        ResponseEntity<?> response = authController.registerUser(signupRequest);
+        // When
+        final ResponseEntity<?> response = authController.registerUser(signupRequest);
 
-        // Assert
+        // Then
         assertEquals(400, response.getStatusCodeValue());
         MessageResponse messageResponse = (MessageResponse) response.getBody();
         assertEquals("Error: Email already in use!", messageResponse.getMessage());
