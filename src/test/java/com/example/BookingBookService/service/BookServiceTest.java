@@ -47,9 +47,11 @@ class BookServiceTest {
         final UsersEntity user = new UsersEntity();
         user.setUsername("testUser");
 
-        final UserBookEntity savedBook = new UserBookEntity(user, request.getGoogleBookId(), request.getTitle());
-        savedBook.setAuthors(request.getAuthors());
-        savedBook.setDescription(request.getDescription());
+        final UserBookEntity savedBook = new UserBookEntity(user,
+                                                            request.getGoogleBookId(),
+                                                            request.getTitle(),
+                                                            request.getAuthors(),
+                                                            request.getDescription());
 
         when(usersEntityRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(userBookRepository.existsByUserAndGoogleBookId(user, "123")).thenReturn(false);
@@ -107,8 +109,8 @@ class BookServiceTest {
         final UsersEntity user = new UsersEntity();
         user.setUsername(username);
 
-        final UserBookEntity book1 = new UserBookEntity(user, "123", "Book 1");
-        final UserBookEntity book2 = new UserBookEntity(user, "456", "Book 2");
+        final UserBookEntity book1 = new UserBookEntity(user, "123", "Book 1", "authors", "description");
+        final UserBookEntity book2 = new UserBookEntity(user, "456", "Book 2", "authors", "description");
 
         when(usersEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userBookRepository.findByUser(user)).thenReturn(List.of(book1, book2));
@@ -179,7 +181,7 @@ class BookServiceTest {
         final String googleBookId = "123";
         final UsersEntity user = new UsersEntity();
         user.setUsername(username);
-        final UserBookEntity book = new UserBookEntity(user, googleBookId, "Test Book");
+        final UserBookEntity book = new UserBookEntity(user, googleBookId, "Test Book", "authors", "description");
 
         when(usersEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userBookRepository.findByUserAndGoogleBookId(user, googleBookId)).thenReturn(Optional.of(book));

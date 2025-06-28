@@ -33,9 +33,8 @@ public class BookController {
     public ResponseEntity<?> addBookToCollection(@RequestBody AddBookRequest addBookRequest) {
         try {
 
-            final UserBookEntity savedBook = bookService.addBookToCollection(addBookRequest);
-
-            return ResponseEntity.ok(savedBook);
+            bookService.addBookToCollection(addBookRequest);
+            return ResponseEntity.ok(Map.of("message", "Book added successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

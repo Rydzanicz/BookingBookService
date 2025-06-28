@@ -36,9 +36,11 @@ public class BookService {
             throw new RuntimeException("Book already exists in user collection");
         }
 
-        final UserBookEntity userBookEntity = new UserBookEntity(user, addBookRequest.getGoogleBookId(), addBookRequest.getTitle());
-        userBookEntity.setAuthors(addBookRequest.getAuthors());
-        userBookEntity.setDescription(addBookRequest.getDescription());
+        final UserBookEntity userBookEntity = new UserBookEntity(user,
+                                                                 addBookRequest.getGoogleBookId(),
+                                                                 addBookRequest.getTitle(),
+                                                                 addBookRequest.getAuthors(),
+                                                                 addBookRequest.getDescription());
 
         return userBookRepository.save(userBookEntity);
     }

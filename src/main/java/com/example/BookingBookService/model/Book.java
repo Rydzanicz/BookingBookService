@@ -18,6 +18,9 @@ public class Book {
                 final List<String> authors,
                 final String description,
                 final String publishedDate) {
+        if (googleBookId == null || googleBookId.isEmpty()) {
+            throw new IllegalArgumentException("googleBookId cannot be null or empty");
+        }
         this.googleBookId = googleBookId;
         this.title = title;
         this.authors = authors;
@@ -29,40 +32,19 @@ public class Book {
         return googleBookId;
     }
 
-    public void setGoogleBookId(String googleBookId) {
-        this.googleBookId = googleBookId;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public List<String> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(List<String> authors) {
-        this.authors = authors;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getPublishedDate() {
         return publishedDate;
     }
-
-    public void setPublishedDate(String publishedDate) {
-        this.publishedDate = publishedDate;
-    }
-
 }

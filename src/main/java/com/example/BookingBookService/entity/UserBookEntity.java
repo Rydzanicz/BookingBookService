@@ -38,31 +38,22 @@ public class UserBookEntity {
     public UserBookEntity() {
     }
 
-    public UserBookEntity(final UsersEntity user, final String googleBookId, final String title) {
+    public UserBookEntity(final UsersEntity user,
+                          final String googleBookId,
+                          final String title,
+                          final String authors,
+                          final String description) {
         this.user = user;
         this.googleBookId = googleBookId;
         this.title = title;
+        this.authors = authors;
+        this.description = description;
     }
 
     public UsersEntity getUser() {
         return user;
     }
 
-    public void setUser(final UsersEntity user) {
-        this.user = user;
-    }
-
-    public void setAuthors(final String authors) {
-        this.authors = authors;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
-    public Long getId() {
-        return id;
-    }
 
     public String getGoogleBookId() {
         return googleBookId;
