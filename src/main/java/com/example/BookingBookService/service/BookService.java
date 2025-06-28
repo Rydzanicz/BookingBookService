@@ -25,9 +25,9 @@ public class BookService {
     }
 
     public UserBookEntity addBookToCollection(final AddBookRequest addBookRequest) {
-        final Optional<UsersEntity> userOpt = usersEntityRepository.findByUsername(addBookRequest.getUserName());
+        final Optional<UsersEntity> userOpt = usersEntityRepository.findByUsername(addBookRequest.getUsername());
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found: " + addBookRequest.getUserName());
+            throw new RuntimeException("User not found: " + addBookRequest.getUsername());
         }
 
         final UsersEntity user = userOpt.get();

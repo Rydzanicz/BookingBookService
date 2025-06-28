@@ -10,25 +10,22 @@ public class AddBookRequest {
     private String title;
 
     @NotBlank
+    private String username;
 
-    private String userName;
-
-    @NotBlank
     private String authors;
 
-    @NotBlank
     private String description;
 
     public AddBookRequest() {}
 
     public AddBookRequest(final String googleBookId,
                           final String title,
-                          final String userName,
+                          final String username,
                           final String authors,
                           final String description) {
         this.googleBookId = googleBookId;
         this.title = title;
-        this.userName = userName;
+        this.username = username;
         this.authors = authors;
         this.description = description;
     }
@@ -41,8 +38,8 @@ public class AddBookRequest {
         return title;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
     public String getAuthors() {
