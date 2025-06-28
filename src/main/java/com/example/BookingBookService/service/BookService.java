@@ -1,8 +1,9 @@
 package com.example.BookingBookService.service;
 
-import com.example.BookingBookService.entity.ReadBookEntity;
+import com.example.BookingBookService.controler.request.AddBookRequest;
+import com.example.BookingBookService.entity.UserBookEntity;
 import com.example.BookingBookService.entity.UsersEntity;
-import com.example.BookingBookService.repository.ReadBookRepository;
+import com.example.BookingBookService.repository.UserBookRepository;
 import com.example.BookingBookService.repository.UsersEntityRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,67 +15,55 @@ import java.util.Optional;
 @Transactional
 public class BookService {
 
-    private final ReadBookRepository readBookRepository;
+    private final UserBookRepository userBookRepository;
 
     private final UsersEntityRepository usersEntityRepository;
 
-    public BookService(final ReadBookRepository readBookRepository, final UsersEntityRepository usersEntityRepository) {
-        this.readBookRepository = readBookRepository;
+    public BookService(final UserBookRepository userBookRepository, final UsersEntityRepository usersEntityRepository) {
+        this.userBookRepository = userBookRepository;
         this.usersEntityRepository = usersEntityRepository;
     }
 
-    public ReadBookEntity addBookToCollection(final String username,
-                                              final String googleBookId,
-                                              final String title,
-                                              final String authors,
-                                              final String description,
-                                              final String publishedDate,
-                                              final Integer pageCount,
-                                              final String categories,
-                                              final String thumbnailUrl) {
-        Optional<UsersEntity> userOpt = usersEntityRepository.findByUsername(username);
+    public UserBookEntity addBookToCollection(final AddBookRequest addBookRequest) {
+        final Optional<UsersEntity> userOpt = usersEntityRepository.findByUsername(addBookRequest.getUserName());
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found: " + username);
+            throw new RuntimeException("User not found: " + addBookRequest.getUserName());
         }
 
-        UsersEntity user = userOpt.get();
+        final UsersEntity user = userOpt.get();
 
-        if (readBookRepository.existsByUserAndGoogleBookId(user, googleBookId)) {
+        if (userBookRepository.existsByUserAndGoogleBookId(user, addBookRequest.getGoogleBookId())) {
             throw new RuntimeException("Book already exists in user collection");
         }
 
-        ReadBookEntity readBook = new ReadBookEntity(user, googleBookId, title);
-        readBook.setAuthors(authors);
-        readBook.setDescription(description);
-        readBook.setPublishedDate(publishedDate);
-        readBook.setPageCount(pageCount);
-        readBook.setCategories(categories);
-        readBook.setThumbnailUrl(thumbnailUrl);
+        final UserBookEntity userBookEntity = new UserBookEntity(user, addBookRequest.getGoogleBookId(), addBookRequest.getTitle());
+        userBookEntity.setAuthors(addBookRequest.getAuthors());
+        userBookEntity.setDescription(addBookRequest.getDescription());
 
-        return readBookRepository.save(readBook);
+        return userBookRepository.save(userBookEntity);
     }
 
-    public List<ReadBookEntity> getUserBooks(final String username) {
-        Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
+    public List<UserBookEntity> getUserBooks(final String username) {
+        final Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
         if (user.isPresent()) {
-            return readBookRepository.findByUserOrderByAddedAtDesc(user.get());
+            return userBookRepository.findByUser(user.get());
         }
         throw new RuntimeException("User not found: " + username);
     }
 
     public void removeBookFromCollection(final String username, final String googleBookId) {
-        Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
+        final Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
         if (user.isPresent()) {
-            readBookRepository.deleteByUserAndGoogleBookId(user.get(), googleBookId);
+            userBookRepository.deleteByUserAndGoogleBookId(user.get(), googleBookId);
         } else {
             throw new RuntimeException("User not found: " + username);
         }
     }
 
-    public Optional<ReadBookEntity> getUserBook(final String username, final String googleBookId) {
-        Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
+    public Optional<UserBookEntity> getUserBook(final String username, final String googleBookId) {
+        final Optional<UsersEntity> user = usersEntityRepository.findByUsername(username);
         if (user.isPresent()) {
-            return readBookRepository.findByUserAndGoogleBookId(user.get(), googleBookId);
+            return userBookRepository.findByUserAndGoogleBookId(user.get(), googleBookId);
         }
         return Optional.empty();
     }

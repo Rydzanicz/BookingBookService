@@ -1,4 +1,4 @@
-package com.example.BookingBookService.dto.request;
+package com.example.BookingBookService.controler.request;
 
 import jakarta.validation.constraints.NotBlank;
 

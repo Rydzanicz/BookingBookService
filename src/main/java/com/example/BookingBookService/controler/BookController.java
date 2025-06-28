@@ -1,6 +1,7 @@
 package com.example.BookingBookService.controler;
 
-import com.example.BookingBookService.entity.ReadBookEntity;
+import com.example.BookingBookService.controler.request.AddBookRequest;
+import com.example.BookingBookService.entity.UserBookEntity;
 import com.example.BookingBookService.service.BookService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,27 +29,11 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @PostMapping("/collection/add")
-    public ResponseEntity<?> addBookToCollection(@RequestBody Map<String, Object> bookData) {
+    @PostMapping(value = "/collection/add", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addBookToCollection(@RequestBody AddBookRequest addBookRequest) {
         try {
-            final String username = (String) bookData.get("username");
-            final String googleBookId = (String) bookData.get("googleBookId");
-            final String title = (String) bookData.get("title");
-            final String authors = (String) bookData.get("authors");
-            final String description = (String) bookData.get("description");
-            final String publishedDate = (String) bookData.get("publishedDate");
-            final Integer pageCount = (Integer) bookData.get("pageCount");
-            final String categories = (String) bookData.get("categories");
-            final String thumbnailUrl = (String) bookData.get("thumbnailUrl");
-            final ReadBookEntity savedBook = bookService.addBookToCollection(username,
-                                                                             googleBookId,
-                                                                             title,
-                                                                             authors,
-                                                                             description,
-                                                                             publishedDate,
-                                                                             pageCount,
-                                                                             categories,
-                                                                             thumbnailUrl);
+
+            final UserBookEntity savedBook = bookService.addBookToCollection(addBookRequest);
 
             return ResponseEntity.ok(savedBook);
         } catch (Exception e) {
@@ -57,9 +42,9 @@ public class BookController {
     }
 
     @GetMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getUserCollection(@RequestParam String username) {
+    public ResponseEntity<?> getUserCollection(@RequestParam(defaultValue = "adam") String username) {
         try {
-            final List<ReadBookEntity> books = bookService.getUserBooks(username);
+            final List<UserBookEntity> books = bookService.getUserBooks(username);
             return ResponseEntity.ok(books);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -67,7 +52,8 @@ public class BookController {
     }
 
     @DeleteMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> removeBookFromCollection(@RequestParam String username, @RequestParam String googleBookId) {
+    public ResponseEntity<?> removeBookFromCollection(@RequestParam(defaultValue = "adam") String username,
+                                                      @RequestParam(defaultValue = "n3vng7gyGCYC") String googleBookId) {
         try {
             bookService.removeBookFromCollection(username, googleBookId);
             return ResponseEntity.ok(Map.of("message", "Book removed successfully"));

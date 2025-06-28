@@ -2,8 +2,8 @@ package com.example.BookingBookService.controler;
 
 import com.example.BookingBookService.dto.JwtResponse;
 import com.example.BookingBookService.dto.MessageResponse;
-import com.example.BookingBookService.dto.request.LoginRequest;
-import com.example.BookingBookService.dto.request.SignupRequest;
+import com.example.BookingBookService.controler.request.LoginRequest;
+import com.example.BookingBookService.controler.request.SignupRequest;
 import com.example.BookingBookService.model.User;
 import com.example.BookingBookService.repository.UserRepository;
 import com.example.BookingBookService.security.UserPrincipal;

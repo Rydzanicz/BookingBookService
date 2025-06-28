@@ -11,6 +11,7 @@ I. Database
 psql -U postgres
 
 CREATE DATABASE bookingbook;
+DROP DATABASE bookingbook;
 
 II.Google Books API
 
