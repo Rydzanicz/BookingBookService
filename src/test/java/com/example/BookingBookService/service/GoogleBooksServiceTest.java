@@ -4,16 +4,15 @@ import com.example.BookingBookService.model.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class GoogleBooksServiceTest {
@@ -97,20 +96,19 @@ class GoogleBooksServiceTest {
                 """;
 
         final String query = "ASC";
-        final int maxResults = 10;
-        final String url = "https://www.googleapis.com/books/v1/volumes?q=ASC&maxResults=10&key=" + apiKey;
+        final String url = "https://www.googleapis.com/books/v1/volumes?q=ASC&startIndex=0&maxResults=10&key=" + apiKey;
 
         mockServer.expect(requestTo(url)).andExpect(request -> assertEquals(HttpMethod.GET, request.getMethod()))
                 .andRespond(withSuccess(jsonResponse, MediaType.APPLICATION_JSON));
 
         // When
-        final List<Book> books = googleBooksService.searchBooks(query, maxResults);
+        final Page<Book> books = googleBooksService.searchBooks(query, 0, 10);
 
         // Then
         assertNotNull(books);
-        assertEquals(1, books.size());
+        assertEquals(1, books.getContent().size());
 
-        Book book1 = books.get(0);
+        Book book1 = books.getContent().get(0);
 
         assertEquals("n3vng7gyGCYC", book1.getGoogleBookId());
         assertEquals("Harry Potter", book1.getTitle());
@@ -152,20 +150,19 @@ class GoogleBooksServiceTest {
                 """;
 
         final String query = "ASC";
-        final int maxResults = 10;
-        final String url = "https://www.googleapis.com/books/v1/volumes?q=ASC&maxResults=10&key=" + apiKey;
+        final String url = "https://www.googleapis.com/books/v1/volumes?q=ASC&startIndex=0&maxResults=10&key=" + apiKey;
 
         mockServer.expect(requestTo(url)).andExpect(request -> assertEquals(HttpMethod.GET, request.getMethod()))
                 .andRespond(withSuccess(jsonResponse, MediaType.APPLICATION_JSON));
 
         // When
-        final List<Book> books = googleBooksService.searchBooks(query, maxResults);
+        final Page<Book> books = googleBooksService.searchBooks(query, 0, 10);
 
         // Then
         assertNotNull(books);
-        assertEquals(2, books.size());
+        assertEquals(2, books.getContent().size());
 
-        Book book1 = books.get(0);
+        Book book1 = books.getContent().get(0);
 
         assertEquals("ZhQ9kYNnrVoC", book1.getGoogleBookId());
         assertEquals("ASC election", book1.getTitle());
@@ -175,7 +172,7 @@ class GoogleBooksServiceTest {
         assertEquals("A sample description for a book.", book1.getDescription());
         assertEquals(null, book1.getPdfAcsTokenLink());
 
-        Book book2 = books.get(1);
+        Book book2 = books.getContent().get(1);
         assertEquals("jOhXEQAAQBAJ", book2.getGoogleBookId());
         assertEquals("ASC and AI. A Dialogue Between an ASC Master, Psychologist, and AI", book2.getTitle());
         assertEquals(1, book2.getAuthors().size());
@@ -187,42 +184,42 @@ class GoogleBooksServiceTest {
     }
 
     @Test
-    void searchBooksShouldThrowExceptionOnHttpErrorResponse() {
+    void searchBooksShouldHandlePagination() {
         // Given
-        final String url = createUrl("ErrorQuery", 10);
+        final String jsonResponse = """
+                {
+                    "kind": "books#volumes",
+                    "totalItems": 100,
+                    "items": [{
+                        "id": "pageTestId",
+                        "volumeInfo": {
+                            "title": "Test Book on Page 2"
+                        }
+                    }]
+                }
+                """;
 
-        mockServer.expect(requestTo(url)).andRespond(withServerError());
+        final String query = "TestQuery";
+        final int page = 2;
+        final int size = 10;
+        final String url = String.format(
+                "https://www.googleapis.com/books/v1/volumes?q=%s&startIndex=%d&maxResults=%d&key=%s",
+                query, page * size, size, apiKey
+        );
+
+        mockServer.expect(requestTo(url))
+                .andRespond(withSuccess(jsonResponse, MediaType.APPLICATION_JSON));
 
         // When
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            googleBooksService.searchBooks("ErrorQuery", 10);
-        });
+        final Page<Book> books = googleBooksService.searchBooks(query, page, size);
 
-        //Then
-        assertTrue(exception.getMessage().contains("Failed to fetch or parse books data"));
+        // Then
+        assertNotNull(books);
+        assertEquals(1, books.getContent().size());
+        assertEquals(page, books.getNumber());
+        assertEquals(size, books.getSize());
+        assertEquals(100, books.getTotalElements());
         mockServer.verify();
-    }
-
-    @Test
-    void searchBooksShouldThrowExceptionWhenResponseIsMalformed() {
-        // Given
-        String malformedJson = "{invalid";
-
-        String url = createUrl("MalformedQuery", 10);
-
-        mockServer.expect(requestTo(url)).andRespond(withSuccess(malformedJson, MediaType.APPLICATION_JSON));
-
-        // When
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            googleBooksService.searchBooks("MalformedQuery", 10);
-        });
-        //Then
-        assertTrue(exception.getMessage().contains("Failed to fetch or parse books data"));
-        mockServer.verify();
-    }
-
-    private String createUrl(String query, int maxResults) {
-        return "https://www.googleapis.com/books/v1/volumes?q=" + query + "&maxResults=" + maxResults + "&key=" + apiKey;
     }
 
 }

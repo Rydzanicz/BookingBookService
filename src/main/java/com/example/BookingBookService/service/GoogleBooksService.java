@@ -1,13 +1,16 @@
 package com.example.BookingBookService.service;
 
 import com.example.BookingBookService.model.Book;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -24,19 +27,20 @@ public class GoogleBooksService {
     }
 
 
-    public List<Book> searchBooks(final String query, final int maxResults) {
-        final String url = UriComponentsBuilder.fromHttpUrl(BASE_URL).queryParam("q", query).queryParam("maxResults", maxResults)
-                                               .queryParam("key", apiKey).toUriString();
+    public Page<Book> searchBooks(final String query, final int page, final int size) {
+        final int startIndex = page * size;
+        final String url = String.format(
+                BASE_URL + "?q=%s&startIndex=%d&maxResults=%d&key=%s",
+                URLEncoder.encode(query, StandardCharsets.UTF_8), startIndex, size, apiKey
+        );
 
-        try {
-            final String response = restTemplate.getForObject(url, String.class);
+        final Map<String, Object> result = restTemplate.getForObject(url, Map.class);
+        final long totalItems = result.get("totalItems") != null
+                ? ((Number) result.get("totalItems")).longValue()
+                : 0;
 
-            final ObjectMapper objectMapper = new ObjectMapper();
-            final Map<String, Object> jsonResponse = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
-            return BookParser.parseBooksFromJson(jsonResponse);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch or parse books data", e);
-        }
+        final List<Book> books = BookParser.parseBooksFromJson(result);
+        final Pageable pageable = PageRequest.of(page, size);
+        return new PageImpl<>(books, pageable, totalItems);
     }
-
 }

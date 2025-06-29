@@ -2,15 +2,11 @@ package com.example.BookingBookService.controler;
 
 import com.example.BookingBookService.model.Book;
 import com.example.BookingBookService.service.GoogleBooksService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -25,10 +21,12 @@ public class GoogleBooksController {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchBooks(@RequestParam(required = false, defaultValue = "ASC") String query,
-                                         @RequestParam(required = false, defaultValue = "10") int size) {
+    public ResponseEntity<?> searchBooks(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size) {
         try {
-            final List<Book> response = googleBooksService.searchBooks(query, size);
+            final Page<Book> response = googleBooksService.searchBooks(query, page, size);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
