@@ -21,9 +21,25 @@ public class BookParser {
             final String description = (String) volumeInfo.get("description");
             final String publishedDate = (String) volumeInfo.get("publishedDate");
 
-            books.add(new Book(googleBookId, title, authors, description, publishedDate));
-        }
+            String pdfAcsTokenLink = null;
 
+            final Map<String, Object> accessInfo = (Map<String, Object>) item.get("accessInfo");
+            if (accessInfo != null) {
+                final Map<String, Object> pdfInfo = (Map<String, Object>) accessInfo.get("pdf");
+                if (pdfInfo != null) {
+                    pdfAcsTokenLink = (String) pdfInfo.get("acsTokenLink");
+                }
+            }
+
+            books.add(new Book(
+                    googleBookId,
+                    title,
+                    authors,
+                    description,
+                    publishedDate,
+                    pdfAcsTokenLink
+            ));
+        }
         return books;
     }
 }

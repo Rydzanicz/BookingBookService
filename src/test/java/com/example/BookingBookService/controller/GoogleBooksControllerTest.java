@@ -23,8 +23,8 @@ class GoogleBooksControllerTest {
     @Test
     void searchBooksShouldReturnBooksWhenValidRequest() {
         // Given
-        final List<Book> mockBooks = List.of(new Book("1", "Test Book 1", List.of("Author 1"), "Description 1", "2023-01-01"),
-                                             new Book("2", "Test Book 2", List.of("Author 2"), "Description 2", "2023-02-02"));
+        final List<Book> mockBooks = List.of(new Book("1", "Test Book 1", List.of("Author 1"), "Description 1", "2023-01-01", "http://books.google.pl/books/download/Critical_Perspectives_on_Harry_Potter-sample-pdf.acsm?id=yfOTAgAAQBAJ&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api"),
+                new Book("2", "Test Book 2", List.of("Author 2"), "Description 2", "2023-02-02", "http://books.google.pl/books/download/Critical_Perspectives_on_Harry_Potter-sample-pdf.acsm?id=yfOTAgAAQBAJ&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api"));
 
         Mockito.when(googleBooksService.searchBooks(anyString(), anyInt())).thenReturn(mockBooks);
 
