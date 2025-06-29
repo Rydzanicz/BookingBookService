@@ -1,14 +1,6 @@
 package com.example.BookingBookService.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "read_books")
@@ -34,6 +26,9 @@ public class UserBookEntity {
     @Column(name = "description", length = 2000)
     private String description;
 
+    @Column(name = "pdfAcsTokenLink", length = 2000)
+    private String pdfAcsTokenLink;
+
 
     public UserBookEntity() {
     }
@@ -42,12 +37,14 @@ public class UserBookEntity {
                           final String googleBookId,
                           final String title,
                           final String authors,
-                          final String description) {
+                          final String description,
+                          final String pdfAcsTokenLink) {
         this.user = user;
         this.googleBookId = googleBookId;
         this.title = title;
         this.authors = authors;
         this.description = description;
+        this.pdfAcsTokenLink = pdfAcsTokenLink;
     }
 
     public UsersEntity getUser() {
@@ -69,5 +66,9 @@ public class UserBookEntity {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getPdfAcsTokenLink() {
+        return pdfAcsTokenLink;
     }
 }

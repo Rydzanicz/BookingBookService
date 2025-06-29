@@ -14,15 +14,9 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BookServiceTest {
 
@@ -43,15 +37,18 @@ class BookServiceTest {
     @Test
     void ShouldAddBookToCollectionSuccess() {
         // Given
-        final AddBookRequest request = new AddBookRequest("123", "Test Title", "testUser", "Test Authors", "Test Description");
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final AddBookRequest request = new AddBookRequest("123", "Test Title", "testUser", "Test Authors", "Test Description", url);
         final UsersEntity user = new UsersEntity();
         user.setUsername("testUser");
 
         final UserBookEntity savedBook = new UserBookEntity(user,
-                                                            request.getGoogleBookId(),
-                                                            request.getTitle(),
-                                                            request.getAuthors(),
-                                                            request.getDescription());
+                request.getGoogleBookId(),
+                request.getTitle(),
+                request.getAuthors(),
+                request.getDescription(),
+                url);
 
         when(usersEntityRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(userBookRepository.existsByUserAndGoogleBookId(user, "123")).thenReturn(false);
@@ -65,13 +62,16 @@ class BookServiceTest {
         assertEquals("Test Title", result.getTitle());
         assertEquals("Test Authors", result.getAuthors());
         assertEquals("Test Description", result.getDescription());
+        assertEquals(url, result.getPdfAcsTokenLink());
         verify(userBookRepository, times(1)).save(any(UserBookEntity.class));
     }
 
     @Test
     void ShouldAddBookToCollectionUserNotFound() {
         //Given
-        final AddBookRequest request = new AddBookRequest("123", "Test Title", "nonExistentUser", "Test Authors", "Test Description");
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final AddBookRequest request = new AddBookRequest("123", "Test Title", "nonExistentUser", "Test Authors", "Test Description", url);
 
         when(usersEntityRepository.findByUsername("nonExistentUser")).thenReturn(Optional.empty());
 
@@ -86,7 +86,9 @@ class BookServiceTest {
     @Test
     void ShouldAddBookToCollectionBookAlreadyExists() {
         //Given
-        final AddBookRequest request = new AddBookRequest("123", "Test Title", "testUser", "Test Authors", "Test Description");
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final AddBookRequest request = new AddBookRequest("123", "Test Title", "testUser", "Test Authors", "Test Description", url);
         final UsersEntity user = new UsersEntity();
         user.setUsername("testUser");
 
@@ -108,9 +110,10 @@ class BookServiceTest {
         final String username = "testUser";
         final UsersEntity user = new UsersEntity();
         user.setUsername(username);
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
 
-        final UserBookEntity book1 = new UserBookEntity(user, "123", "Book 1", "authors", "description");
-        final UserBookEntity book2 = new UserBookEntity(user, "456", "Book 2", "authors", "description");
+        final UserBookEntity book1 = new UserBookEntity(user, "123", "Book 1", "authors", "description", url);
+        final UserBookEntity book2 = new UserBookEntity(user, "456", "Book 2", "authors", "description", url);
 
         when(usersEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userBookRepository.findByUser(user)).thenReturn(List.of(book1, book2));
@@ -167,7 +170,7 @@ class BookServiceTest {
 
         // When
         final RuntimeException exception = assertThrows(RuntimeException.class,
-                                                        () -> bookService.removeBookFromCollection(username, googleBookId));
+                () -> bookService.removeBookFromCollection(username, googleBookId));
 
         // Then
         assertEquals("User not found: nonExistentUser", exception.getMessage());
@@ -181,7 +184,9 @@ class BookServiceTest {
         final String googleBookId = "123";
         final UsersEntity user = new UsersEntity();
         user.setUsername(username);
-        final UserBookEntity book = new UserBookEntity(user, googleBookId, "Test Book", "authors", "description");
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final UserBookEntity book = new UserBookEntity(user, googleBookId, "Test Book", "authors", "description", url);
 
         when(usersEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userBookRepository.findByUserAndGoogleBookId(user, googleBookId)).thenReturn(Optional.of(book));

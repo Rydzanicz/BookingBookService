@@ -16,18 +16,23 @@ public class AddBookRequest {
 
     private String description;
 
-    public AddBookRequest() {}
+    private String pdfAcsTokenLink;
+
+    public AddBookRequest() {
+    }
 
     public AddBookRequest(final String googleBookId,
                           final String title,
                           final String username,
                           final String authors,
-                          final String description) {
+                          final String description,
+                          final String pdfAcsTokenLink) {
         this.googleBookId = googleBookId;
         this.title = title;
         this.username = username;
         this.authors = authors;
         this.description = description;
+        this.pdfAcsTokenLink = pdfAcsTokenLink;
     }
 
     public String getGoogleBookId() {
@@ -50,4 +55,7 @@ public class AddBookRequest {
         return description;
     }
 
+    public String getPdfAcsTokenLink() {
+        return pdfAcsTokenLink;
+    }
 }

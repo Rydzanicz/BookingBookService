@@ -34,7 +34,9 @@ class BookControllerTest {
     @Test
     void ShouldReturnBadRequestWhenAddBookToCollectionFails() {
         // Given
-        final AddBookRequest request = new AddBookRequest("adam", "123", "Test Title", "Author", "A sample description");
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final AddBookRequest request = new AddBookRequest("adam", "123", "Test Title", "Author", "A sample description", url);
 
         when(bookService.addBookToCollection(request)).thenThrow(new RuntimeException("User not found"));
 
@@ -51,11 +53,14 @@ class BookControllerTest {
     @Test
     void ShouldAddBookToCollectionSuccessfully() {
         // Given
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
         final AddBookRequest request = new AddBookRequest("adam",
                 "123",
                 "Effective Java",
                 "Joshua Bloch",
-                "A must-read book for Java developers");
+                "A must-read book for Java developers",
+                url);
 
         // When
         final ResponseEntity<?> response = bookController.addBookToCollection(request);
@@ -70,8 +75,10 @@ class BookControllerTest {
     void ShouldReturnUserCollectionSuccessfully() {
         // Given
         final String username = "adam";
-        final List<UserBookEntity> books = List.of(new UserBookEntity(null, "123", "Test Book 1", "Author", "Description 1"),
-                new UserBookEntity(null, "456", "Test Book 2", "Author", "Description 2"));
+        final String url = "http://books.google.pl/books/download/Harry_Potter-sample-pdf.acsm?id=n3vng7gyGCYC&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api";
+
+        final List<UserBookEntity> books = List.of(new UserBookEntity(null, "123", "Test Book 1", "Author", "Description 1", url),
+                new UserBookEntity(null, "456", "Test Book 2", "Author", "Description 2", url));
 
         when(bookService.getUserBooks(username)).thenReturn(books);
 

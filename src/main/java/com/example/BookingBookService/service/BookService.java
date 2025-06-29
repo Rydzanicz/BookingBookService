@@ -37,10 +37,11 @@ public class BookService {
         }
 
         final UserBookEntity userBookEntity = new UserBookEntity(user,
-                                                                 addBookRequest.getGoogleBookId(),
-                                                                 addBookRequest.getTitle(),
-                                                                 addBookRequest.getAuthors(),
-                                                                 addBookRequest.getDescription());
+                addBookRequest.getGoogleBookId(),
+                addBookRequest.getTitle(),
+                addBookRequest.getAuthors(),
+                addBookRequest.getDescription(),
+                addBookRequest.getPdfAcsTokenLink());
 
         return userBookRepository.save(userBookEntity);
     }
