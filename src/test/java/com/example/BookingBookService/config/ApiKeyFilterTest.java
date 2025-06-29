@@ -10,10 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ApiKeyFilterTest {
 
@@ -34,29 +31,29 @@ class ApiKeyFilterTest {
 
     @Test
     void testDoFilter_ValidApiKey() throws IOException, ServletException {
-        //given
+        // Given
         when(mockRequest.getHeader("X-API-KEY")).thenReturn("VIGG0=VALID_API_KEY");
         when(mockResponse.getWriter()).thenReturn(mock(PrintWriter.class));
 
-        //when
+        // When
         apiKeyFilter.doFilter(mockRequest, mockResponse, mockFilterChain);
 
-        //then
+        // Then
         verify(mockFilterChain).doFilter(mockRequest, mockResponse);
         verify(mockResponse, never()).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     @Test
     void testDoFilter_MissingHeader() throws IOException, ServletException {
-        //given
+        // Given
         final PrintWriter mockWriter = mock(PrintWriter.class);
         when(mockResponse.getWriter()).thenReturn(mockWriter);
         when(mockRequest.getHeader("X-API-KEY")).thenReturn(null);
 
-        //when
+        // When
         apiKeyFilter.doFilter(mockRequest, mockResponse, mockFilterChain);
 
-        //then
+        // Then
         verify(mockResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockWriter).write("Unauthorized: Invalid or missing API Key");
         verify(mockFilterChain, never()).doFilter(mockRequest, mockResponse);
@@ -64,15 +61,15 @@ class ApiKeyFilterTest {
 
     @Test
     void testDoFilter_InvalidApiKey() throws IOException, ServletException {
-        //given
+        // Given
         final PrintWriter mockWriter = mock(PrintWriter.class);
         when(mockResponse.getWriter()).thenReturn(mockWriter);
         when(mockRequest.getHeader("X-API-KEY")).thenReturn("ROLE=INVALID_API_KEY");
 
-        //when
+        // When
         apiKeyFilter.doFilter(mockRequest, mockResponse, mockFilterChain);
 
-        //then
+        // Then
         verify(mockResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockWriter).write("Unauthorized: Invalid API Key");
         verify(mockFilterChain, never()).doFilter(mockRequest, mockResponse);
@@ -80,15 +77,15 @@ class ApiKeyFilterTest {
 
     @Test
     void testDoFilter_EmptyApiKey() throws IOException, ServletException {
-        //given
+        // Given
         final PrintWriter mockWriter = mock(PrintWriter.class);
         when(mockResponse.getWriter()).thenReturn(mockWriter);
         when(mockRequest.getHeader("X-API-KEY")).thenReturn("");
 
-        //when
+        // When
         apiKeyFilter.doFilter(mockRequest, mockResponse, mockFilterChain);
 
-        //then
+        // Then
         verify(mockResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockWriter).write("Unauthorized: Invalid or missing API Key");
         verify(mockFilterChain, never()).doFilter(mockRequest, mockResponse);
@@ -96,15 +93,15 @@ class ApiKeyFilterTest {
 
     @Test
     void testDoFilter_InternalErrorHandling() throws IOException, ServletException {
-        //given
+        // Given
         final PrintWriter mockWriter = mock(PrintWriter.class);
         when(mockResponse.getWriter()).thenReturn(mockWriter);
         when(mockRequest.getHeader("X-API-KEY")).thenThrow(new RuntimeException("Unexpected error"));
 
-        //when
+        // When
         apiKeyFilter.doFilter(mockRequest, mockResponse, mockFilterChain);
 
-        //then
+        // Then
         verify(mockResponse).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         verify(mockWriter).write("Internal Server Error: Unexpected error");
         verify(mockFilterChain, never()).doFilter(mockRequest, mockResponse);
